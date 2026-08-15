@@ -6,8 +6,8 @@ export const webComponentList: WebComponentBuildConfig[] = [
     path: "./web-component/lib/jb-color-picker.ts",
     outputPath: "./web-component/dist/jb-color-picker.js",
     tsConfigPath: "./web-component/tsconfig.json",
-    external: ["jb-core/theme"],
-    globals: { "jb-core/theme": "JBCoreTheme" },
+    external: ["jb-core/theme", "jb-number-input"],
+    globals: { "jb-core/theme": "JBCoreTheme", "jb-number-input": "JBNumberInput" },
     umdName: "JBColorPicker",
   },
 ];

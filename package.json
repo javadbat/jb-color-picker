@@ -8,8 +8,22 @@
     "email": "javadbat@gmail.com"
   },
   "license": "MIT",
-  "keywords": ["jb", "color", "color picker", "rgb", "oklch", "web component"],
-  "files": ["README.md", "web-component/custom-elements.json", "web-component/lib/", "web-component/dist/", "react/", "react/dist/"],
+  "keywords": [
+    "jb",
+    "color",
+    "color picker",
+    "rgb",
+    "oklch",
+    "web component"
+  ],
+  "files": [
+    "README.md",
+    "web-component/custom-elements.json",
+    "web-component/lib/",
+    "web-component/dist/",
+    "react/",
+    "react/dist/"
+  ],
   "main": "index.js",
   "types": "./web-component/dist/jb-color-picker.d.ts",
   "exports": {
@@ -29,6 +43,7 @@
     "url": "git@github.com:javadbat/jb-color-picker.git"
   },
   "dependencies": {
-    "jb-core": "^0.33.0"
+    "jb-core": "^0.33.0",
+    "jb-number-input": "^1.6.0"
   }
 }

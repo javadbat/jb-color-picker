@@ -15,9 +15,8 @@ button, input { font: inherit; }
 .hue::-webkit-slider-thumb, .alpha::-webkit-slider-thumb { appearance: none; width: 1rem; height: 1rem; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px #555; background: transparent; }
 .alpha-track { padding: 0.15rem 0; background-color: #fff; background-image: conic-gradient(#ddd 25%, #fff 0 50%, #ddd 0 75%, #fff 0); background-size: 0.6rem 0.6rem; border-radius: 1rem; }
 .alpha { display: block; appearance: none; height: 0.65rem; border-radius: 1rem; background: linear-gradient(to right, transparent, var(--selected-color)); }
-.fields { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; }
-.field { display: grid; gap: 0.2rem; min-width: 0; font-size: 0.7rem; text-align: center; }
-.field input { min-width: 0; width: 100%; padding: 0.35rem 0.2rem; color: inherit; text-align: center; border: 1px solid var(--picker-border-color); border-radius: 0.35rem; background: transparent; }
+.fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+.field { display: block; min-width: 0; width: 100%; font-size: 0.7rem; }
 .result { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
 .preview { flex: 0 0 auto; width: 1.75rem; height: 1.75rem; border: 1px solid var(--picker-border-color); border-radius: 0.35rem; background: var(--selected-color); }
 .value-text { overflow: hidden; font-family: ui-monospace, monospace; font-size: 0.7rem; text-overflow: ellipsis; white-space: nowrap; }

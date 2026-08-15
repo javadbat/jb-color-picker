@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Render color channel parameters with controlled `jb-number-input` fields in a two-by-two grid.
+
 ## 0.2.0
 
 - Return a CSS color string from `value` and expose the typed color through `valueObject`.

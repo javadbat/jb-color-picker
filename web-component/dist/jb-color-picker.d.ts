@@ -32,6 +32,14 @@ type ColorPickerElements = {
   valueText: HTMLOutputElement;
 };
 //#endregion
+//#region modules/jb-core/dist/index.d.ts
+//#endregion
+//#region modules/jb-core/lib/base-component.d.ts
+declare const JBBaseComponent: {
+  new (): HTMLElement;
+  prototype: HTMLElement;
+}; //#endregion
+//#endregion
 //#region modules/jb-color-picker/web-component/lib/color.d.ts
 declare const MAX_OKLCH_CHROMA = 0.4;
 declare function clamp(value: number, min: number, max: number): number;
@@ -58,7 +66,7 @@ declare function colorToCss(value: JBColorPickerValue): string;
 declare function parseColor(value: string): JBColorPickerValue | null;
 //#endregion
 //#region modules/jb-color-picker/web-component/lib/jb-color-picker.d.ts
-declare class JBColorPickerWebComponent extends HTMLElement {
+declare class JBColorPickerWebComponent extends JBBaseComponent {
   #private;
   static get observedAttributes(): string[];
   elements: ColorPickerElements;
@@ -68,7 +76,6 @@ declare class JBColorPickerWebComponent extends HTMLElement {
   get value(): string;
   set value(value: JBColorPickerValue | string);
   get valueObject(): JBColorPickerValue;
-  get valueAsString(): string;
   get colorSpace(): ColorSpace | null;
   set colorSpace(value: ColorSpace | null);
   get alphaEnabled(): boolean;

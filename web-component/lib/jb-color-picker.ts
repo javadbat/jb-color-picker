@@ -1,6 +1,8 @@
 import CSS from "./jb-color-picker.css";
 import VariablesCSS from "./variables.css";
 import { registerDefaultVariables } from "jb-core/theme";
+import "jb-number-input";
+import type { JBNumberInputWebComponent } from "jb-number-input";
 import { colorToCss, convertColor, hsvToRgb, MAX_OKLCH_CHROMA, normalizeColor, oklchToRgb, parseColor, rgbToHsv } from "./color.js";
 import { renderHTML } from "./render.js";
 import type { ColorPickerChangeEvent, ColorPickerElements, ColorSpace, JBColorPickerValue, RGBColor } from "./types.js";
@@ -10,16 +12,16 @@ export * from "./color.js";
 
 const FIELD_CONFIG = {
   rgb: [
-    { key: "r", label: "R", min: 0, max: 255, step: 1 },
-    { key: "g", label: "G", min: 0, max: 255, step: 1 },
-    { key: "b", label: "B", min: 0, max: 255, step: 1 },
-    { key: "alpha", label: "Alpha", min: 0, max: 1, step: 0.01 },
+    { key: "r", label: "R", min: 0, max: 255, step: 1, decimalPrecision: 0, acceptNegative: false },
+    { key: "g", label: "G", min: 0, max: 255, step: 1, decimalPrecision: 0, acceptNegative: false },
+    { key: "b", label: "B", min: 0, max: 255, step: 1, decimalPrecision: 0, acceptNegative: false },
+    { key: "alpha", label: "Alpha", min: 0, max: 1, step: 0.01, decimalPrecision: 2, acceptNegative: false },
   ],
   oklch: [
-    { key: "l", label: "L", min: 0, max: 1, step: 0.01 },
-    { key: "c", label: "C", min: 0, max: MAX_OKLCH_CHROMA, step: 0.001 },
-    { key: "h", label: "H", min: 0, max: 360, step: 1 },
-    { key: "alpha", label: "Alpha", min: 0, max: 1, step: 0.01 },
+    { key: "l", label: "L", min: 0, max: 1, step: 0.01, decimalPrecision: 2, acceptNegative: false },
+    { key: "c", label: "C", min: 0, max: MAX_OKLCH_CHROMA, step: 0.001, decimalPrecision: 3, acceptNegative: false },
+    { key: "h", label: "H", min: 0, max: 360, step: 1, decimalPrecision: 0, acceptNegative: false },
+    { key: "alpha", label: "Alpha", min: 0, max: 1, step: 0.01, decimalPrecision: 2, acceptNegative: false },
   ],
 } as const;
 
@@ -164,7 +166,6 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
       this.#emit("input");
     });
     this.elements.alpha.addEventListener("change", () => this.#emit("change"));
-    this.elements.fields.addEventListener("change", event => this.#handleFieldChange(event));
     this.elements.surface.addEventListener("pointerdown", event => this.#startSurfacePointer(event));
     this.elements.surface.addEventListener("pointermove", event => this.#moveSurfacePointer(event));
     this.elements.surface.addEventListener("pointerup", event => this.#endSurfacePointer(event));
@@ -238,7 +239,7 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
   }
 
   #handleFieldChange(event: Event): void {
-    const input = (event.target as HTMLElement).closest<HTMLInputElement>("input[data-channel]");
+    const input = (event.target as HTMLElement).closest<JBNumberInputWebComponent>("jb-number-input[data-channel]");
     if (!input || this.disabled) return;
     const key = input.dataset.channel!;
     const numericValue = Number(input.value);
@@ -293,22 +294,22 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
     const fragment = document.createDocumentFragment();
     for (const config of FIELD_CONFIG[this.#value.colorSpace]) {
       if (config.key === "alpha" && !this.alphaEnabled) continue;
-      const label = document.createElement("label");
-      label.className = "field";
-      label.setAttribute("part", "field");
-      const text = document.createElement("span");
-      text.textContent = config.label;
-      const input = document.createElement("input");
-      input.type = "number";
-      input.min = String(config.min);
-      input.max = String(config.max);
-      input.step = String(config.step);
+      const input = document.createElement("jb-number-input") as JBNumberInputWebComponent;
+      input.className = "field";
+      input.setAttribute("part", "field");
+      input.setAttribute("label", config.label);
+      input.minValue = config.min;
+      input.maxValue = config.max;
+      input.step = config.step;
+      input.decimalPrecision = config.decimalPrecision;
+      input.acceptNegative = config.acceptNegative;
+      input.showControlButton = true;
       input.disabled = this.disabled;
       input.dataset.channel = config.key;
       input.value = String(Number((this.#value as unknown as Record<string, number>)[config.key].toFixed(config.key === "c" ? 3 : config.step < 1 ? 2 : 0)));
       input.setAttribute("aria-label", config.label);
-      label.append(text, input);
-      fragment.appendChild(label);
+      input.addEventListener("change", event => this.#handleFieldChange(event));
+      fragment.appendChild(input);
     }
     this.elements.fields.replaceChildren(fragment);
   }
