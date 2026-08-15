@@ -14,7 +14,9 @@
     "color picker",
     "rgb",
     "oklch",
-    "web component"
+    "web component",
+    "react",
+    "typescript"
   ],
   "files": [
     "README.md",
@@ -43,7 +45,7 @@
     "url": "git@github.com:javadbat/jb-color-picker.git"
   },
   "dependencies": {
-    "jb-core": "^0.33.0",
-    "jb-number-input": "^1.6.0"
+    "jb-core": "^0.34.0",
+    "jb-number-input": "^1.7.0"
   }
 }

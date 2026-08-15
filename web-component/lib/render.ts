@@ -1,3 +1,6 @@
+import "jb-number-input";
+import type { JBNumberInputWebComponent } from "jb-number-input";
+
 export function renderHTML(): string {
   return /* html */ `
     <div class="picker" part="wrapper">
@@ -26,4 +29,20 @@ export function renderHTML(): string {
       </div>
     </div>
   `;
+}
+
+export function createPickerContent(styles: string): DocumentFragment {
+  const template = document.createElement("template");
+  template.innerHTML = `<style>${styles}</style>${renderHTML()}`;
+  return template.content.cloneNode(true) as DocumentFragment;
+}
+
+export function createFieldElement(channel: string, onChange: (event: Event) => void): JBNumberInputWebComponent {
+  const input = document.createElement("jb-number-input") as JBNumberInputWebComponent;
+  input.className = "field";
+  input.setAttribute("size", "xs");
+  input.setAttribute("part", "field");
+  input.dataset.channel = channel;
+  input.addEventListener("change", onChange);
+  return input;
 }

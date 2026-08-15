@@ -1,10 +1,9 @@
 import CSS from "./jb-color-picker.css";
 import VariablesCSS from "./variables.css";
 import { registerDefaultVariables } from "jb-core/theme";
-import "jb-number-input";
 import type { JBNumberInputWebComponent } from "jb-number-input";
 import { colorToCss, convertColor, hsvToRgb, MAX_OKLCH_CHROMA, normalizeColor, oklchToRgb, parseColor, rgbToHsv } from "./color.js";
-import { renderHTML } from "./render.js";
+import { createFieldElement, createPickerContent } from "./render.js";
 import type { ColorPickerChangeEvent, ColorPickerElements, ColorSpace, JBColorPickerValue, RGBColor } from "./types.js";
 import { JBBaseComponent } from "jb-core";
 export * from "./types.js";
@@ -46,9 +45,7 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
     }
     const shadowRoot = this.attachShadow({ mode: "open", clonable: true, serializable: true });
     registerDefaultVariables();
-    const template = document.createElement("template");
-    template.innerHTML = `<style>${CSS} ${VariablesCSS}</style>${renderHTML()}`;
-    shadowRoot.appendChild(template.content.cloneNode(true));
+    shadowRoot.appendChild(createPickerContent(`${CSS} ${VariablesCSS}`));
     this.elements = {
       surface: shadowRoot.querySelector(".surface")!,
       surfaceCursor: shadowRoot.querySelector(".surface-cursor")!,
@@ -73,7 +70,7 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
       this.#value = convertColor(this.#value, this.#colorSpace);
       this.#syncHue();
     }
-    this.#render();
+    this.#updateView();
     this.dispatchEvent(new CustomEvent("load", { bubbles: true, composed: true }));
     this.dispatchEvent(new CustomEvent("init", { bubbles: true, composed: true }));
   }
@@ -87,7 +84,7 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
         this.#syncHue();
       }
     }
-    this.#render();
+    this.#updateView();
   }
 
   get value(): string {
@@ -99,7 +96,7 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
     if (!parsedValue) return;
     this.#value = this.#colorSpace ? convertColor(parsedValue, this.#colorSpace) : parsedValue;
     this.#syncHue();
-    this.#render();
+    this.#updateView();
   }
 
   get valueObject(): JBColorPickerValue {
@@ -114,7 +111,7 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
     if (value === null) {
       this.#colorSpace = null;
       if (this.hasAttribute("color-space")) this.removeAttribute("color-space");
-      else this.#render();
+      else this.#updateView();
       return;
     }
     if (value !== "rgb" && value !== "oklch") return;
@@ -124,7 +121,7 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
       this.#syncHue();
     }
     if (this.getAttribute("color-space") !== value) this.setAttribute("color-space", value);
-    this.#render();
+    this.#updateView();
   }
 
   get alphaEnabled(): boolean {
@@ -151,7 +148,7 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
         if (this.#colorSpace !== null || space === this.#value.colorSpace) return;
         this.#value = convertColor(this.#value, space);
         this.#syncHue();
-        this.#render();
+        this.#updateView();
         this.#emit("input");
         this.#emit("change");
       });
@@ -219,7 +216,7 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
     } else {
       this.#value = normalizeColor({ ...this.#value, c: x * MAX_OKLCH_CHROMA, l: 1 - y });
     }
-    this.#render(false);
+    this.#updateView(false);
   }
 
   #setHue(hue: number): void {
@@ -230,12 +227,12 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
     } else {
       this.#value = normalizeColor({ ...this.#value, h: hue });
     }
-    this.#render();
+    this.#updateView();
   }
 
   #setAlpha(alpha: number): void {
     this.#value = normalizeColor({ ...this.#value, alpha } as JBColorPickerValue);
-    this.#render(false);
+    this.#updateView(false);
   }
 
   #handleFieldChange(event: Event): void {
@@ -244,12 +241,12 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
     const key = input.dataset.channel!;
     const numericValue = Number(input.value);
     if (!Number.isFinite(numericValue)) {
-      this.#renderFields();
+      this.#updateFieldValues();
       return;
     }
     this.#value = normalizeColor({ ...this.#value, [key]: numericValue } as JBColorPickerValue);
     this.#syncHue();
-    this.#render();
+    this.#updateView();
     this.#emit("input");
     this.#emit("change");
   }
@@ -261,7 +258,7 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
     }
   }
 
-  #render(redrawSurface = true): void {
+  #updateView(updateSurfacePixels = true): void {
     if (!this.isConnected) return;
     const cssColor = colorToCss(this.#value);
     const opaqueColor = colorToCss({ ...this.#value, alpha: 1 } as JBColorPickerValue);
@@ -286,18 +283,20 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
     this.elements.surface.setAttribute("aria-label", this.#value.colorSpace === "rgb" ? "Saturation and brightness" : "Chroma and lightness");
     this.elements.surface.setAttribute("aria-description", cssColor);
     if (this.#internals) this.#internals.ariaDescription = cssColor;
-    this.#renderFields();
-    if (redrawSurface) this.#drawSurface();
+    this.#updateFieldValues();
+    if (updateSurfacePixels) this.#drawSurface();
   }
 
-  #renderFields(): void {
-    const fragment = document.createDocumentFragment();
+  #updateFieldValues(): void {
+    const existingInputs = new Map(
+      Array.from(this.elements.fields.querySelectorAll<JBNumberInputWebComponent>("jb-number-input[data-channel]")).map(input => [input.dataset.channel!, input]),
+    );
+    const nextInputs: JBNumberInputWebComponent[] = [];
     for (const config of FIELD_CONFIG[this.#value.colorSpace]) {
       if (config.key === "alpha" && !this.alphaEnabled) continue;
-      const input = document.createElement("jb-number-input") as JBNumberInputWebComponent;
-      input.className = "field";
-      input.setAttribute("part", "field");
-      input.setAttribute("label", config.label);
+      let input = existingInputs.get(config.key);
+      if (!input) input = createFieldElement(config.key, event => this.#handleFieldChange(event));
+      if (input.getAttribute("label") !== config.label) input.setAttribute("label", config.label);
       input.minValue = config.min;
       input.maxValue = config.max;
       input.step = config.step;
@@ -305,13 +304,15 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
       input.acceptNegative = config.acceptNegative;
       input.showControlButton = true;
       input.disabled = this.disabled;
-      input.dataset.channel = config.key;
-      input.value = String(Number((this.#value as unknown as Record<string, number>)[config.key].toFixed(config.key === "c" ? 3 : config.step < 1 ? 2 : 0)));
+      const value = String(Number((this.#value as unknown as Record<string, number>)[config.key].toFixed(config.key === "c" ? 3 : config.step < 1 ? 2 : 0)));
+      if (input.value !== value) input.value = value;
       input.setAttribute("aria-label", config.label);
-      input.addEventListener("change", event => this.#handleFieldChange(event));
-      fragment.appendChild(input);
+      nextInputs.push(input);
     }
-    this.elements.fields.replaceChildren(fragment);
+    const currentInputs = Array.from(this.elements.fields.children);
+    if (currentInputs.length !== nextInputs.length || currentInputs.some((input, index) => input !== nextInputs[index])) {
+      this.elements.fields.replaceChildren(...nextInputs);
+    }
   }
 
   #getSurfacePosition(): { x: number; y: number } {

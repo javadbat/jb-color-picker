@@ -1,7 +1,13 @@
 :host { display: inline-block; color: var(--picker-color); font-family: var(--picker-font-family); }
 *, *::before, *::after { box-sizing: border-box; }
 button, input { font: inherit; }
-.picker { width: var(--picker-width); padding: 0.75rem; background: var(--picker-background); border: 1px solid var(--picker-border-color); border-radius: var(--picker-radius); display: grid; gap: 0.75rem; }
+.picker {
+  width: var(--picker-width);
+  background: var(--picker-background);
+  border: 1px solid var(--picker-border-color);
+  border-radius: var(--picker-radius); display:
+  grid; gap: 0.75rem; 
+}
 .space-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem; padding: 0.2rem; border-radius: 0.5rem; background: color-mix(in srgb, var(--picker-border-color), transparent 55%); }
 .space-switch[hidden] { display: none; }
 .space-switch button { appearance: none; border: 0; border-radius: 0.35rem; padding: 0.4rem; color: inherit; background: transparent; cursor: pointer; }
