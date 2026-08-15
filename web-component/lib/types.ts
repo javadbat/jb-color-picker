@@ -18,7 +18,10 @@ export type OKLCHColor = {
 
 export type JBColorPickerValue = RGBColor | OKLCHColor;
 
-export type ColorPickerChangeEvent = CustomEvent<{ value: JBColorPickerValue }>;
+export type ColorPickerChangeEvent = CustomEvent<{
+  value: string;
+  valueObject: JBColorPickerValue;
+}>;
 
 export type ColorPickerElements = {
   surface: HTMLCanvasElement;
@@ -27,6 +30,7 @@ export type ColorPickerElements = {
   alpha: HTMLInputElement;
   alphaRow: HTMLElement;
   preview: HTMLElement;
+  spaceSwitch: HTMLElement;
   spaceButtons: NodeListOf<HTMLButtonElement>;
   fields: HTMLElement;
   valueText: HTMLOutputElement;

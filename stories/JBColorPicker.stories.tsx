@@ -27,18 +27,20 @@ type Story = StoryObj<typeof meta>;
 export const RGB: Story = {
   play: async ({ canvasElement, args }) => {
     const picker = canvasElement.querySelector<JBColorPickerWebComponent>("jb-color-picker")!;
-    await waitFor(() => expect(picker.value.colorSpace).toBe("rgb"));
-    expect(picker.valueAsString).toBe("rgb(59 102 245 / 1)");
+    await waitFor(() => expect(picker.valueObject.colorSpace).toBe("rgb"));
+    expect(picker.value).toBe("rgb(59 102 245 / 1)");
+    expect(picker.colorSpace).toBeNull();
 
     const oklchButton = picker.shadowRoot!.querySelector<HTMLButtonElement>("[data-space='oklch']")!;
     await userEvent.click(oklchButton);
-    expect(picker.colorSpace).toBe("oklch");
+    expect(picker.colorSpace).toBeNull();
+    expect(picker.valueObject.colorSpace).toBe("oklch");
     expect(args.onChange).toHaveBeenCalled();
 
     const expected = rgbToOklch({ colorSpace: "rgb", r: 59, g: 102, b: 245, alpha: 1 });
-    if (picker.value.colorSpace !== "oklch") throw new Error("Expected OKLCH value");
-    expect(picker.value.l).toBeCloseTo(expected.l, 5);
-    expect(picker.value.c).toBeCloseTo(expected.c, 5);
+    if (picker.valueObject.colorSpace !== "oklch") throw new Error("Expected OKLCH value");
+    expect(picker.valueObject.l).toBeCloseTo(expected.l, 5);
+    expect(picker.valueObject.c).toBeCloseTo(expected.c, 5);
   },
 };
 
@@ -48,16 +50,33 @@ export const OKLCH: Story = {
   },
   play: async ({ canvasElement }) => {
     const picker = canvasElement.querySelector<JBColorPickerWebComponent>("jb-color-picker")!;
-    await waitFor(() => expect(picker.value.colorSpace).toBe("oklch"));
-    const before = picker.value.colorSpace === "oklch" ? picker.value.c : 0;
+    await waitFor(() => expect(picker.valueObject.colorSpace).toBe("oklch"));
+    const before = picker.valueObject.colorSpace === "oklch" ? picker.valueObject.c : 0;
     const surface = picker.shadowRoot!.querySelector<HTMLCanvasElement>(".surface")!;
     surface.focus();
     await userEvent.keyboard("{ArrowRight}");
-    expect(picker.value.colorSpace).toBe("oklch");
-    if (picker.value.colorSpace === "oklch") expect(picker.value.c).toBeGreaterThan(before);
+    expect(picker.valueObject.colorSpace).toBe("oklch");
+    if (picker.valueObject.colorSpace === "oklch") expect(picker.valueObject.c).toBeGreaterThan(before);
 
-    const rgb = convertColor(picker.value, "rgb");
+    const rgb = convertColor(picker.valueObject, "rgb");
     expect(rgb.colorSpace).toBe("rgb");
+  },
+};
+
+export const LockedRGB: Story = {
+  args: {
+    colorSpace: "rgb",
+    value: "oklch(0.72 0.16 250 / 0.8)",
+  },
+  play: async ({ canvasElement }) => {
+    const picker = canvasElement.querySelector<JBColorPickerWebComponent>("jb-color-picker")!;
+    await waitFor(() => expect(picker.colorSpace).toBe("rgb"));
+    expect(picker.valueObject.colorSpace).toBe("rgb");
+    expect(picker.shadowRoot!.querySelector<HTMLElement>(".space-switch")!.hidden).toBe(true);
+
+    picker.colorSpace = null;
+    expect(picker.shadowRoot!.querySelector<HTMLElement>(".space-switch")!.hidden).toBe(false);
+    picker.colorSpace = "rgb";
   },
 };
 

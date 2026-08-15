@@ -8,8 +8,8 @@ import type { JBElementStandardProps } from "jb-core/react";
 import "./module-declaration.js";
 
 export type JBColorPickerProps = JBElementStandardProps<JBColorPickerWebComponent, "value" | "colorSpace" | "alphaEnabled" | "disabled" | "onInput" | "onChange"> & {
-  value?: JBColorPickerValue;
-  colorSpace?: ColorSpace;
+  value?: JBColorPickerValue | string;
+  colorSpace?: ColorSpace | null;
   alphaEnabled?: boolean;
   disabled?: boolean;
   onInput?: (event: ColorPickerChangeEvent) => void;

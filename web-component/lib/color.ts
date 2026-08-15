@@ -131,6 +131,122 @@ export function colorToCss(value: JBColorPickerValue): string {
   return `oklch(${trim(color.l)} ${trim(color.c)} ${trim(color.h)} / ${trim(color.alpha)})`;
 }
 
+/**
+ * Parses CSS RGB, RGBA, hexadecimal, and OKLCH colors supported by the picker.
+ * Returns null for invalid or unsupported CSS color syntaxes.
+ */
+export function parseColor(value: string): JBColorPickerValue | null {
+  const source = value.trim().toLowerCase();
+  if (source.startsWith("#")) return parseHexColor(source);
+  if (/^rgba?\(/.test(source)) return parseRgbColor(source);
+  if (source.startsWith("oklch(")) return parseOklchColor(source);
+  return null;
+}
+
+function parseHexColor(source: string): RGBColor | null {
+  const hex = source.slice(1);
+  if (![3, 4, 6, 8].includes(hex.length) || !/^[\da-f]+$/.test(hex)) return null;
+  const expanded = hex.length <= 4 ? [...hex].map(character => character + character).join("") : hex;
+  const hasAlpha = expanded.length === 8;
+  return normalizeColor({
+    colorSpace: "rgb",
+    r: Number.parseInt(expanded.slice(0, 2), 16),
+    g: Number.parseInt(expanded.slice(2, 4), 16),
+    b: Number.parseInt(expanded.slice(4, 6), 16),
+    alpha: hasAlpha ? Number.parseInt(expanded.slice(6, 8), 16) / 255 : 1,
+  }) as RGBColor;
+}
+
+function parseRgbColor(source: string): RGBColor | null {
+  const functionMatch = source.match(/^rgba?\((.*)\)$/);
+  if (!functionMatch) return null;
+  const body = functionMatch[1].trim();
+  const commaSyntax = body.includes(",");
+  let channels: string[];
+  let alphaToken: string | undefined;
+  if (commaSyntax) {
+    const tokens = body.split(",").map(token => token.trim());
+    if (tokens.length !== 3 && tokens.length !== 4) return null;
+    channels = tokens.slice(0, 3);
+    alphaToken = tokens[3];
+  } else {
+    const slashParts = body.split("/").map(token => token.trim());
+    if (slashParts.length > 2) return null;
+    channels = slashParts[0].split(/\s+/);
+    alphaToken = slashParts[1];
+  }
+  if (channels.length !== 3) return null;
+  const parsedChannels = channels.map(parseRgbChannel);
+  const alpha = alphaToken === undefined ? 1 : parseAlpha(alphaToken);
+  if (parsedChannels.some(channel => channel === null) || alpha === null) return null;
+  return normalizeColor({
+    colorSpace: "rgb",
+    r: parsedChannels[0]!,
+    g: parsedChannels[1]!,
+    b: parsedChannels[2]!,
+    alpha,
+  }) as RGBColor;
+}
+
+function parseOklchColor(source: string): OKLCHColor | null {
+  const functionMatch = source.match(/^oklch\((.*)\)$/);
+  if (!functionMatch) return null;
+  const slashParts = functionMatch[1]
+    .trim()
+    .split("/")
+    .map(token => token.trim());
+  if (slashParts.length > 2) return null;
+  const channels = slashParts[0].split(/\s+/);
+  if (channels.length !== 3) return null;
+  const lightness = parseLightness(channels[0]);
+  const chroma = parseNumber(channels[1]);
+  const hue = parseHue(channels[2]);
+  const alpha = slashParts[1] === undefined ? 1 : parseAlpha(slashParts[1]);
+  if (lightness === null || chroma === null || hue === null || alpha === null) return null;
+  return normalizeColor({ colorSpace: "oklch", l: lightness, c: chroma, h: hue, alpha }) as OKLCHColor;
+}
+
+function parseRgbChannel(token: string): number | null {
+  if (token.endsWith("%")) {
+    const percentage = parseNumber(token.slice(0, -1));
+    return percentage === null ? null : (percentage / 100) * 255;
+  }
+  return parseNumber(token);
+}
+
+function parseLightness(token: string): number | null {
+  if (token.endsWith("%")) {
+    const percentage = parseNumber(token.slice(0, -1));
+    return percentage === null ? null : percentage / 100;
+  }
+  return parseNumber(token);
+}
+
+function parseAlpha(token: string): number | null {
+  if (token.endsWith("%")) {
+    const percentage = parseNumber(token.slice(0, -1));
+    return percentage === null ? null : percentage / 100;
+  }
+  return parseNumber(token);
+}
+
+function parseHue(token: string): number | null {
+  const match = token.match(/^([-+]?(?:\d+\.?\d*|\.\d+))(deg|grad|rad|turn)?$/);
+  if (!match) return null;
+  const value = Number(match[1]);
+  if (!Number.isFinite(value)) return null;
+  if (match[2] === "grad") return value * 0.9;
+  if (match[2] === "rad") return (value * 180) / Math.PI;
+  if (match[2] === "turn") return value * 360;
+  return value;
+}
+
+function parseNumber(token: string): number | null {
+  if (!/^[-+]?(?:\d+\.?\d*|\.\d+)$/.test(token)) return null;
+  const value = Number(token);
+  return Number.isFinite(value) ? value : null;
+}
+
 function trim(value: number): string {
   return String(Number(value.toFixed(3)));
 }

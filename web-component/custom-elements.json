@@ -14,20 +14,21 @@
           "tagName": "jb-color-picker",
           "superclass": { "name": "HTMLElement" },
           "attributes": [
-            { "name": "color-space", "type": { "text": "'rgb' | 'oklch'" }, "default": "'rgb'", "description": "Active color space." },
+            { "name": "color-space", "type": { "text": "'rgb' | 'oklch'" }, "description": "Locks the picker to one color space and hides the color-space switch." },
             { "name": "alpha-disabled", "type": { "text": "boolean" }, "default": "false", "description": "Hides alpha controls when present." },
             { "name": "disabled", "type": { "text": "boolean" }, "default": "false", "description": "Disables interaction." }
           ],
           "members": [
-            { "kind": "field", "name": "value", "type": { "text": "JBColorPickerValue" }, "description": "Current normalized RGB or OKLCH value." },
-            { "kind": "field", "name": "valueAsString", "type": { "text": "string" }, "readonly": true, "description": "Current value formatted as a CSS color." },
-            { "kind": "field", "name": "colorSpace", "type": { "text": "'rgb' | 'oklch'" }, "description": "Active color space; changing it converts the current color." },
+            { "kind": "field", "name": "value", "type": { "text": "string | JBColorPickerValue" }, "description": "Returns a CSS color string and accepts either a supported CSS color string or typed color object." },
+            { "kind": "field", "name": "valueObject", "type": { "text": "JBColorPickerValue" }, "readonly": true, "description": "Current normalized typed RGB or OKLCH value." },
+            { "kind": "field", "name": "valueAsString", "type": { "text": "string" }, "readonly": true, "description": "Alias of value." },
+            { "kind": "field", "name": "colorSpace", "type": { "text": "'rgb' | 'oklch' | null" }, "description": "Configured color-space lock. Null allows user switching and displays the tabs." },
             { "kind": "field", "name": "alphaEnabled", "type": { "text": "boolean" }, "description": "Whether alpha controls are visible." },
             { "kind": "field", "name": "disabled", "type": { "text": "boolean" }, "description": "Whether interaction is disabled." }
           ],
           "events": [
-            { "name": "input", "type": { "text": "CustomEvent<{ value: JBColorPickerValue }>" }, "description": "Dispatched while the user changes the color." },
-            { "name": "change", "type": { "text": "CustomEvent<{ value: JBColorPickerValue }>" }, "description": "Dispatched when a user interaction is committed." },
+            { "name": "input", "type": { "text": "CustomEvent<{ value: string; valueObject: JBColorPickerValue }>" }, "description": "Dispatched while the user changes the color." },
+            { "name": "change", "type": { "text": "CustomEvent<{ value: string; valueObject: JBColorPickerValue }>" }, "description": "Dispatched when a user interaction is committed." },
             { "name": "load", "description": "Dispatched when the component connects." },
             { "name": "init", "description": "Dispatched after initial setup." }
           ],

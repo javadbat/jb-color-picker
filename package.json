@@ -1,6 +1,6 @@
 {
   "name": "jb-color-picker",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "RGB and OKLCH color picker web component",
   "type": "module",
   "author": {

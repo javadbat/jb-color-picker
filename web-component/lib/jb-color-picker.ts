@@ -1,7 +1,7 @@
 import CSS from "./jb-color-picker.css";
 import VariablesCSS from "./variables.css";
 import { registerDefaultVariables } from "jb-core/theme";
-import { colorToCss, convertColor, hsvToRgb, MAX_OKLCH_CHROMA, normalizeColor, oklchToRgb, rgbToHsv } from "./color.js";
+import { colorToCss, convertColor, hsvToRgb, MAX_OKLCH_CHROMA, normalizeColor, oklchToRgb, parseColor, rgbToHsv } from "./color.js";
 import { renderHTML } from "./render.js";
 import type { ColorPickerChangeEvent, ColorPickerElements, ColorSpace, JBColorPickerValue, RGBColor } from "./types.js";
 
@@ -30,6 +30,7 @@ export class JBColorPickerWebComponent extends HTMLElement {
 
   elements: ColorPickerElements;
   #value: JBColorPickerValue = { colorSpace: "rgb", r: 59, g: 102, b: 245, alpha: 1 };
+  #colorSpace: ColorSpace | null = null;
   #rgbHue = rgbToHsv(this.#value as RGBColor).h;
   #surfacePointerActive = false;
   #internals?: ElementInternals;
@@ -53,6 +54,7 @@ export class JBColorPickerWebComponent extends HTMLElement {
       alpha: shadowRoot.querySelector(".alpha")!,
       alphaRow: shadowRoot.querySelector(".alpha-row")!,
       preview: shadowRoot.querySelector(".preview")!,
+      spaceSwitch: shadowRoot.querySelector(".space-switch")!,
       spaceButtons: shadowRoot.querySelectorAll("[data-space]"),
       fields: shadowRoot.querySelector(".fields")!,
       valueText: shadowRoot.querySelector(".value-text")!,
@@ -64,7 +66,11 @@ export class JBColorPickerWebComponent extends HTMLElement {
 
   connectedCallback(): void {
     const attributeSpace = this.getAttribute("color-space");
-    if (attributeSpace === "rgb" || attributeSpace === "oklch") this.colorSpace = attributeSpace;
+    this.#colorSpace = attributeSpace === "rgb" || attributeSpace === "oklch" ? attributeSpace : null;
+    if (this.#colorSpace && this.#colorSpace !== this.#value.colorSpace) {
+      this.#value = convertColor(this.#value, this.#colorSpace);
+      this.#syncHue();
+    }
     this.#render();
     this.dispatchEvent(new CustomEvent("load", { bubbles: true, composed: true }));
     this.dispatchEvent(new CustomEvent("init", { bubbles: true, composed: true }));
@@ -72,35 +78,49 @@ export class JBColorPickerWebComponent extends HTMLElement {
 
   attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
     if (oldValue === newValue) return;
-    if (name === "color-space" && (newValue === "rgb" || newValue === "oklch") && newValue !== this.#value.colorSpace) {
-      this.#value = convertColor(this.#value, newValue);
-      this.#syncHue();
+    if (name === "color-space") {
+      this.#colorSpace = newValue === "rgb" || newValue === "oklch" ? newValue : null;
+      if (this.#colorSpace && this.#colorSpace !== this.#value.colorSpace) {
+        this.#value = convertColor(this.#value, this.#colorSpace);
+        this.#syncHue();
+      }
     }
     this.#render();
   }
 
-  get value(): JBColorPickerValue {
-    return { ...this.#value };
-  }
-
-  set value(value: JBColorPickerValue) {
-    if (!value || (value.colorSpace !== "rgb" && value.colorSpace !== "oklch")) return;
-    this.#value = normalizeColor(value);
-    this.#syncHue();
-    if (this.getAttribute("color-space") !== this.#value.colorSpace) this.setAttribute("color-space", this.#value.colorSpace);
-    this.#render();
-  }
-
-  get valueAsString(): string {
+  get value(): string {
     return colorToCss(this.#value);
   }
 
-  get colorSpace(): ColorSpace {
-    return this.#value.colorSpace;
+  set value(value: JBColorPickerValue | string) {
+    const parsedValue = typeof value === "string" ? parseColor(value) : value && (value.colorSpace === "rgb" || value.colorSpace === "oklch") ? normalizeColor(value) : null;
+    if (!parsedValue) return;
+    this.#value = this.#colorSpace ? convertColor(parsedValue, this.#colorSpace) : parsedValue;
+    this.#syncHue();
+    this.#render();
   }
 
-  set colorSpace(value: ColorSpace) {
+  get valueObject(): JBColorPickerValue {
+    return { ...this.#value };
+  }
+
+  get valueAsString(): string {
+    return this.value;
+  }
+
+  get colorSpace(): ColorSpace | null {
+    return this.#colorSpace;
+  }
+
+  set colorSpace(value: ColorSpace | null) {
+    if (value === null) {
+      this.#colorSpace = null;
+      if (this.hasAttribute("color-space")) this.removeAttribute("color-space");
+      else this.#render();
+      return;
+    }
     if (value !== "rgb" && value !== "oklch") return;
+    this.#colorSpace = value;
     if (value !== this.#value.colorSpace) {
       this.#value = convertColor(this.#value, value);
       this.#syncHue();
@@ -130,8 +150,10 @@ export class JBColorPickerWebComponent extends HTMLElement {
       button.addEventListener("click", () => {
         if (this.disabled) return;
         const space = button.dataset.space as ColorSpace;
-        if (space === this.colorSpace) return;
-        this.colorSpace = space;
+        if (this.#colorSpace !== null || space === this.#value.colorSpace) return;
+        this.#value = convertColor(this.#value, space);
+        this.#syncHue();
+        this.#render();
         this.#emit("input");
         this.#emit("change");
       });
@@ -255,6 +277,7 @@ export class JBColorPickerWebComponent extends HTMLElement {
     this.elements.valueText.value = cssColor;
     this.elements.valueText.textContent = cssColor;
     this.elements.surface.tabIndex = this.disabled ? -1 : 0;
+    this.elements.spaceSwitch.hidden = this.#colorSpace !== null;
     this.elements.spaceButtons.forEach(button => {
       const selected = button.dataset.space === this.#value.colorSpace;
       button.setAttribute("aria-pressed", String(selected));
@@ -328,7 +351,7 @@ export class JBColorPickerWebComponent extends HTMLElement {
 
   #emit(type: "input" | "change"): void {
     const event: ColorPickerChangeEvent = new CustomEvent(type, {
-      detail: { value: this.value },
+      detail: { value: this.value, valueObject: this.valueObject },
       bubbles: true,
       composed: true,
     });

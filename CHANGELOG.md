@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0
+
+- Return a CSS color string from `value` and expose the typed color through `valueObject`.
+- Accept typed objects and supported CSS color strings in the `value` setter.
+- Hide the color-space switch when `colorSpace` is explicitly configured.
+
 ## 0.1.0
 
 - Add standalone RGB and OKLCH picker modes.

@@ -16,7 +16,8 @@ type OKLCHColor = {
 };
 type JBColorPickerValue = RGBColor | OKLCHColor;
 type ColorPickerChangeEvent = CustomEvent<{
-  value: JBColorPickerValue;
+  value: string;
+  valueObject: JBColorPickerValue;
 }>;
 type ColorPickerElements = {
   surface: HTMLCanvasElement;
@@ -25,6 +26,7 @@ type ColorPickerElements = {
   alpha: HTMLInputElement;
   alphaRow: HTMLElement;
   preview: HTMLElement;
+  spaceSwitch: HTMLElement;
   spaceButtons: NodeListOf<HTMLButtonElement>;
   fields: HTMLElement;
   valueText: HTMLOutputElement;
@@ -49,6 +51,11 @@ declare function rgbToOklch(color: RGBColor): OKLCHColor;
 declare function oklchToRgb(color: OKLCHColor): RGBColor;
 declare function convertColor(value: JBColorPickerValue, colorSpace: JBColorPickerValue["colorSpace"]): JBColorPickerValue;
 declare function colorToCss(value: JBColorPickerValue): string;
+/**
+ * Parses CSS RGB, RGBA, hexadecimal, and OKLCH colors supported by the picker.
+ * Returns null for invalid or unsupported CSS color syntaxes.
+ */
+declare function parseColor(value: string): JBColorPickerValue | null;
 //#endregion
 //#region modules/jb-color-picker/web-component/lib/jb-color-picker.d.ts
 declare class JBColorPickerWebComponent extends HTMLElement {
@@ -58,11 +65,12 @@ declare class JBColorPickerWebComponent extends HTMLElement {
   constructor();
   connectedCallback(): void;
   attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void;
-  get value(): JBColorPickerValue;
-  set value(value: JBColorPickerValue);
+  get value(): string;
+  set value(value: JBColorPickerValue | string);
+  get valueObject(): JBColorPickerValue;
   get valueAsString(): string;
-  get colorSpace(): ColorSpace;
-  set colorSpace(value: ColorSpace);
+  get colorSpace(): ColorSpace | null;
+  set colorSpace(value: ColorSpace | null);
   get alphaEnabled(): boolean;
   set alphaEnabled(value: boolean);
   get disabled(): boolean;
@@ -74,5 +82,5 @@ declare global {
   }
 } //# sourceMappingURL=jb-color-picker.d.ts.map
 //#endregion
-export { ColorPickerChangeEvent, ColorPickerElements, ColorSpace, JBColorPickerValue, JBColorPickerWebComponent, MAX_OKLCH_CHROMA, OKLCHColor, RGBColor, clamp, colorToCss, convertColor, hsvToRgb, normalizeColor, normalizeHue, oklchToRgb, rgbToHsv, rgbToOklch };
+export { ColorPickerChangeEvent, ColorPickerElements, ColorSpace, JBColorPickerValue, JBColorPickerWebComponent, MAX_OKLCH_CHROMA, OKLCHColor, RGBColor, clamp, colorToCss, convertColor, hsvToRgb, normalizeColor, normalizeHue, oklchToRgb, parseColor, rgbToHsv, rgbToOklch };
 //# sourceMappingURL=jb-color-picker.d.ts.map
