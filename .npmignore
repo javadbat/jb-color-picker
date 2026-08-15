@@ -1,0 +1,4 @@
+stories/
+vitest.config.ts
+web-component/lib/*.spec.ts
+build-config.ts

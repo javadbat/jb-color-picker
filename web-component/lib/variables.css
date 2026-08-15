@@ -1,0 +1,9 @@
+:host {
+  --picker-width: var(--jb-color-picker-width, 18rem);
+  --picker-background: var(--jb-color-picker-background, var(--jb-surface, #fff));
+  --picker-color: var(--jb-color-picker-color, var(--jb-content-primary, #202124));
+  --picker-border-color: var(--jb-color-picker-border-color, var(--jb-border, #d9dce1));
+  --picker-radius: var(--jb-color-picker-border-radius, 0.75rem);
+  --picker-accent: var(--jb-color-picker-accent-color, var(--jb-primary, #3b66f5));
+  --picker-font-family: var(--jb-color-picker-font-family, inherit);
+}

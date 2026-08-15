@@ -1,0 +1,11 @@
+import { Meta, Canvas, Controls } from "@storybook/addon-docs/blocks";
+import * as Stories from "./JBColorPicker.stories";
+
+<Meta of={Stories} />
+
+# Color Picker
+
+`jb-color-picker` selects RGB and OKLCH colors without acting as a form input. It can be embedded in a popover or composed into a future `jb-color-input`.
+
+<Canvas of={Stories.RGB} />
+<Controls of={Stories.RGB} />

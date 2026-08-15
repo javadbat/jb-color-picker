@@ -1,0 +1,34 @@
+{
+  "name": "jb-color-picker",
+  "version": "0.1.0",
+  "description": "RGB and OKLCH color picker web component",
+  "type": "module",
+  "author": {
+    "name": "mohammad javad bathaei",
+    "email": "javadbat@gmail.com"
+  },
+  "license": "MIT",
+  "keywords": ["jb", "color", "color picker", "rgb", "oklch", "web component"],
+  "files": ["README.md", "web-component/custom-elements.json", "web-component/lib/", "web-component/dist/", "react/", "react/dist/"],
+  "main": "index.js",
+  "types": "./web-component/dist/jb-color-picker.d.ts",
+  "exports": {
+    ".": {
+      "types": "./web-component/dist/jb-color-picker.d.ts",
+      "default": "./index.js"
+    },
+    "./react": {
+      "types": "./react/dist/JBColorPicker.d.ts",
+      "default": "./react/index.js"
+    },
+    "./*": "./*"
+  },
+  "customElements": "web-component/custom-elements.json",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:javadbat/jb-color-picker.git"
+  },
+  "dependencies": {
+    "jb-core": "^0.33.0"
+  }
+}
