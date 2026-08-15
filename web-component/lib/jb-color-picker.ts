@@ -4,7 +4,7 @@ import { registerDefaultVariables } from "jb-core/theme";
 import { colorToCss, convertColor, hsvToRgb, MAX_OKLCH_CHROMA, normalizeColor, oklchToRgb, parseColor, rgbToHsv } from "./color.js";
 import { renderHTML } from "./render.js";
 import type { ColorPickerChangeEvent, ColorPickerElements, ColorSpace, JBColorPickerValue, RGBColor } from "./types.js";
-
+import { JBBaseComponent } from "jb-core";
 export * from "./types.js";
 export * from "./color.js";
 
@@ -23,7 +23,7 @@ const FIELD_CONFIG = {
   ],
 } as const;
 
-export class JBColorPickerWebComponent extends HTMLElement {
+export class JBColorPickerWebComponent extends JBBaseComponent {
   static get observedAttributes(): string[] {
     return ["color-space", "alpha-disabled", "disabled"];
   }
@@ -102,10 +102,6 @@ export class JBColorPickerWebComponent extends HTMLElement {
 
   get valueObject(): JBColorPickerValue {
     return { ...this.#value };
-  }
-
-  get valueAsString(): string {
-    return this.value;
   }
 
   get colorSpace(): ColorSpace | null {
