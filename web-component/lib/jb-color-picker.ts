@@ -1,3 +1,4 @@
+import { defineWebComponent, JBBaseComponent } from "jb-core";
 import CSS from "./jb-color-picker.css";
 import VariablesCSS from "./variables.css";
 import { registerDefaultVariables } from "jb-core/theme";
@@ -5,7 +6,6 @@ import type { JBNumberInputWebComponent } from "jb-number-input";
 import { colorToCss, convertColor, hsvToRgb, MAX_OKLCH_CHROMA, normalizeColor, oklchToRgb, parseColor, rgbToHsv } from "./color.js";
 import { createFieldElement, createPickerContent } from "./render.js";
 import type { ColorPickerChangeEvent, ColorPickerElements, ColorSpace, JBColorPickerValue, RGBColor } from "./types.js";
-import { JBBaseComponent } from "jb-core";
 export * from "./types.js";
 export * from "./color.js";
 
@@ -357,9 +357,7 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
   }
 }
 
-if (!customElements.get("jb-color-picker")) {
-  customElements.define("jb-color-picker", JBColorPickerWebComponent);
-}
+defineWebComponent("jb-color-picker", JBColorPickerWebComponent);
 
 declare global {
   interface HTMLElementTagNameMap {
