@@ -235,7 +235,7 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
     this.#updateView(false);
   }
 
-  #handleFieldChange(event: Event): void {
+  #onFieldChange(event: Event): void {
     const input = (event.target as HTMLElement).closest<JBNumberInputWebComponent>("jb-number-input[data-channel]");
     if (!input || this.disabled) return;
     const key = input.dataset.channel!;
@@ -295,7 +295,7 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
     for (const config of FIELD_CONFIG[this.#value.colorSpace]) {
       if (config.key === "alpha" && !this.alphaEnabled) continue;
       let input = existingInputs.get(config.key);
-      if (!input) input = createFieldElement(config.key, event => this.#handleFieldChange(event));
+      if (!input) input = createFieldElement(config.key, event => this.#onFieldChange(event));
       if (input.getAttribute("label") !== config.label) input.setAttribute("label", config.label);
       input.minValue = config.min;
       input.maxValue = config.max;

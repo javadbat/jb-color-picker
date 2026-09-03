@@ -33,7 +33,7 @@
             { "name": "init", "description": "Dispatched after initial setup." }
           ],
           "cssParts": [
-            { "name": "wrapper" }, { "name": "space-switch" }, { "name": "space-button" },
+            { "name": "root" }, { "name": "space-switch" }, { "name": "space-button" },
             { "name": "color-surface" }, { "name": "surface-cursor" }, { "name": "hue-slider" },
             { "name": "alpha-slider" }, { "name": "fields" }, { "name": "field" },
             { "name": "result" }, { "name": "preview" }, { "name": "value-text" }

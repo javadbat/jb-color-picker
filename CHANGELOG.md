@@ -1,5 +1,12 @@
 # Changelog
 
+
+## [1.0.0] - 2026-09-03
+
+### Changed
+
+- Standardized private DOM event handlers on the `#on<Target><Event>()` naming convention.
+- Breaking: renamed the picker root part from `wrapper` to `root`.
 ## [0.2.0] 2026-08-31
 
 ### Changed

@@ -3,7 +3,7 @@ import type { JBNumberInputWebComponent } from "jb-number-input";
 
 export function renderHTML(): string {
   return /* html */ `
-    <div class="picker" part="wrapper">
+    <div class="picker" part="root">
       <div class="space-switch" role="group" aria-label="Color space" part="space-switch">
         <button type="button" data-space="rgb" part="space-button">RGB</button>
         <button type="button" data-space="oklch" part="space-button">OKLCH</button>
