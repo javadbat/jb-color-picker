@@ -72,7 +72,7 @@ export class JBColorPickerWebComponent extends JBBaseComponent {
     }
     this.#updateView();
     this.dispatchEvent(new CustomEvent("load", { bubbles: true, composed: true }));
-    this.dispatchEvent(new CustomEvent("init", { bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent("init", { bubbles: true, composed: false }));
   }
 
   attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
